@@ -18,7 +18,7 @@
     <p class="brand-subtitle">Integrated Academic System</p>
     
     <!-- Login Form -->
-    <form action="login_process.php" method="POST">
+    <form action="login_process.php" method="POST" autocomplete="off">
         
         <?php 
         if(isset($_GET['error'])) {
@@ -27,13 +27,13 @@
         ?>
 
         <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
+            <label for="username" class="form-label" autocomplete="off">Username</label>
             <input type="text" class="form-control" id="username" name="username" required autofocus>
         </div>
         
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
+            <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password">
         </div>
 
         <button type="submit" class="btn btn-primary w-100 py-2 btn-login">Login</button>

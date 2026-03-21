@@ -36,6 +36,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             <a href="view_evaluation.php" class="list-group-item"><i class="fas fa-star me-3"></i> Evaluations</a>
             <a href="settings.php" class="list-group-item"><i class="fas fa-cog me-3"></i> Settings</a>
             <a href="manage_questions.php" class="list-group-item"><i class="fas fa-question-circle me-3"></i> Eval. Questions</a>
+            <a href="promote_students.php" class="list-group-item"><i class="fas fa-arrow-up me-3"></i> Promote Students</a>
+            
         </div>
     </div>
 

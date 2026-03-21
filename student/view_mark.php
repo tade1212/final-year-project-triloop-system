@@ -5,7 +5,7 @@ include 'header.php';
 
 $student_id = $_SESSION['user_id'];
 
-// 1. Fetch History
+// 1. Fetch History for the Filter Dropdown
 $history_sql = "SELECT DISTINCT r.academic_year, c.grade_level, c.section, r.class_id 
                 FROM semester_registrations r 
                 JOIN classes c ON r.class_id = c.class_id 
@@ -25,44 +25,52 @@ if ($selected_year == '' && $history_res->num_rows > 0) {
     $selected_class = $latest['class_id'];
 }
 
-// 3. RANKING LOGIC (Modified for Annual)
+// 3. SUBJECT COUNT (Required for accurate Average calculation)
+$sub_count_query = $conn->query("SELECT COUNT(allocation_id) as total_subs FROM allocations WHERE class_id = '$selected_class'");
+$sub_count_data = $sub_count_query->fetch_assoc();
+$num_subjects = $sub_count_data['total_subs'] > 0 ? $sub_count_data['total_subs'] : 1;
+
+// 4. RANKING & SUM LOGIC
 if ($selected_sem == '3') {
-    // Annual Rank: Average of S1 and S2
-    $rank_query = "SELECT student_id, (SUM(total_score) / 2) as grand_total 
+    // Annual Sum: Sum S1 + S2 then divide by 2 to keep it out of 100 per subject
+    $rank_query = "SELECT student_id, (SUM(total_score) / 2) as final_sum 
                    FROM grades 
                    JOIN allocations ON grades.allocation_id = allocations.allocation_id 
                    WHERE allocations.class_id = '$selected_class' 
                    AND grades.academic_year = '$selected_year' 
                    AND grades.semester IN (1, 2)
                    GROUP BY student_id 
-                   ORDER BY grand_total DESC";
+                   ORDER BY final_sum DESC";
 } else {
-    $rank_query = "SELECT student_id, SUM(total_score) as grand_total 
+    // Semester Sum
+    $rank_query = "SELECT student_id, SUM(total_score) as final_sum 
                    FROM grades 
                    JOIN allocations ON grades.allocation_id = allocations.allocation_id 
                    WHERE allocations.class_id = '$selected_class' 
                    AND grades.academic_year = '$selected_year' 
                    AND grades.semester = '$selected_sem' 
                    GROUP BY student_id 
-                   ORDER BY grand_total DESC";
+                   ORDER BY final_sum DESC";
 }
 
 $rank_res = $conn->query($rank_query);
 $my_rank = "N/A";
-$my_total_points = 0;
+$my_total_sum = 0;
 $pos = 1;
 while($row = $rank_res->fetch_assoc()) {
     if($row['student_id'] == $student_id) {
         $my_rank = $pos;
-        $my_total_points = $row['grand_total'];
+        $my_total_sum = $row['final_sum'];
         break;
     }
     $pos++;
 }
 
-// 4. FETCH MARKS (Modified for Annual)
+// Calculate actual Average
+$my_average = $my_total_sum / $num_subjects;
+
+// 5. FETCH MARKS FOR TABLE
 if ($selected_sem == '3') {
-    // Annual: Average components of S1 and S2 per subject
     $marks_sql = "SELECT sub.subject_name, 
                   AVG(g.test1) as test1, AVG(g.test2) as test2, AVG(g.exercise) as exercise, 
                   AVG(g.activity) as activity, AVG(g.group_work) as group_work, 
@@ -87,13 +95,34 @@ if ($selected_sem == '3') {
 $marks_res = $conn->query($marks_sql);
 ?>
 
+<style>
+    /* Mobile Font Optimization */
+    @media (max-width: 576px) {
+        .stat-label { font-size: 0.6rem !important; }
+        .stat-value { font-size: 1.1rem !important; }
+        .score-table th, .score-table td { font-size: 0.7rem !important; padding: 4px !important; }
+    }
+    
+    /* PRINT LOGIC */
+    @media print {
+        body * { visibility: hidden; }
+        #printableArea, #printableArea * { visibility: visible; }
+        #printableArea { position: absolute; left: 0; top: 0; width: 100%; color: black !important; }
+        .no-print { display: none !important; }
+        .table { border: 1px solid #dee2e6 !important; width: 100% !important; }
+        #printOnlyHeader { display: block !important; }
+    }
+    #printOnlyHeader { display: none; text-align: center; border-bottom: 3px double #333; margin-bottom: 20px; padding-bottom: 10px; }
+</style>
+
 <div class="container-fluid px-2">
-    <!-- FILTER HEADER -->
-    <div class="card shadow-sm border-0 mb-3 bg-light">
+
+    <!-- 1. FILTERS (Hides during Print) -->
+    <div class="card shadow-sm mb-3 no-print border-0 bg-light">
         <div class="card-body p-2 p-md-3">
-            <form method="GET" action="view_mark.php" class="row g-2 align-items-center">
+            <form method="GET" action="view_mark.php" class="row g-2 align-items-end">
                 <div class="col-12 col-md-5">
-                    <label class="small fw-bold text-muted d-block">Academic Year & Grade</label>
+                    <label class="small fw-bold text-muted">Year & Grade</label>
                     <select name="year_class" class="form-select form-select-sm" onchange="location.href='view_mark.php?year=' + this.value.split('|')[0] + '&class_id=' + this.value.split('|')[1] + '&sem=<?php echo $selected_sem; ?>'">
                         <?php 
                         $history_res->data_seek(0);
@@ -108,7 +137,7 @@ $marks_res = $conn->query($marks_sql);
                     </select>
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="small fw-bold text-muted d-block">Semester</label>
+                    <label class="small fw-bold text-muted">Semester</label>
                     <select name="sem" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="1" <?php if($selected_sem == '1') echo 'selected'; ?>>Semester 1</option>
                         <option value="2" <?php if($selected_sem == '2') echo 'selected'; ?>>Semester 2</option>
@@ -117,79 +146,109 @@ $marks_res = $conn->query($marks_sql);
                     <input type="hidden" name="year" value="<?php echo $selected_year; ?>">
                     <input type="hidden" name="class_id" value="<?php echo $selected_class; ?>">
                 </div>
-                <div class="col-6 col-md-4 text-end pt-3 pt-md-0">
-                    <button type="button" class="btn btn-sm btn-outline-primary w-100 w-md-auto" onclick="window.print()">
-                        <i class="fas fa-print me-1"></i> Print
-                    </button>
+                <div class="col-6 col-md-4 text-end">
+                    <?php if($selected_sem == '3'): ?>
+                        <a href="generate_certificate.php?year=<?php echo $selected_year; ?>&class_id=<?php echo $selected_class; ?>" 
+                           class="btn btn-sm btn-warning w-100 w-md-auto shadow-sm fw-bold">
+                            <i class="fas fa-medal me-1"></i> Certificate
+                        </a>
+                    <?php else: ?>
+                        <button type="button" class="btn btn-sm btn-primary w-100 w-md-auto shadow-sm" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i> Print Report
+                        </button>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- SUMMARY CARDS (Optimized for Mobile) -->
-    <div class="row g-2 mb-3">
-        <div class="col-6">
-            <div class="card bg-primary text-white border-0 shadow-sm h-100">
-                <div class="card-body p-3 text-center">
-                    <small class="opacity-75 d-block text-uppercase" style="font-size: 0.7rem;">Rank</small>
-                    <h2 class="fw-bold mb-0"><?php echo $my_rank; ?></h2>
-                </div>
+    <!-- 2. PRINTABLE CONTENT -->
+    <div id="printableArea">
+        
+        <div id="printOnlyHeader">
+            <h2 class="mb-1">TSINSETA LEMARIAM SECONDARY SCHOOL</h2>
+            <h4 class="text-uppercase border-top border-bottom py-1">Official Student Report Card</h4>
+            <div class="row mt-3 text-start small">
+                <div class="col-6"><strong>Student:</strong> <?php echo $_SESSION['full_name']; ?></div>
+                <div class="col-6 text-end"><strong>ID:</strong> <?php echo $_SESSION['username']; ?></div>
             </div>
         </div>
-        <div class="col-6">
-            <div class="card bg-success text-white border-0 shadow-sm h-100">
-                <div class="card-body p-3 text-center">
-                    <small class="opacity-75 d-block text-uppercase" style="font-size: 0.7rem;">Total Score</small>
-                    <h2 class="fw-bold mb-0"><?php echo number_format($my_total_points, 1); ?></h2>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- MARKS TABLE -->
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover m-0 text-center align-middle" style="font-size: 0.85rem;">
-                    <thead class="table-dark small text-uppercase">
-                        <tr>
-                            <th class="text-start">Subject</th>
-                            <th>Test1(5)</th><th>Test2(5)</th><th>Activity(5)</th><th>Exercisebook(5)</th><th>Individual Work(5)</th><th>Group Work(5)</th><th>Mid Exam(20)</th><th>Final Exam(50)</th>
-                            <th class="bg-primary">Tot</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if($marks_res->num_rows > 0): ?>
-                            <?php while($m = $marks_res->fetch_assoc()): ?>
-                            <tr>
-                                <td class="text-start fw-bold"><?php echo $m['subject_name']; ?></td>
-                                <td><?php echo floatval($m['test1']); ?></td>
-                                <td><?php echo floatval($m['test2']); ?></td>
-                                <td><?php echo floatval($m['activity']); ?></td>
-                                <td><?php echo floatval($m['exercise']); ?></td>
-                                <td><?php echo floatval($m['indiv_work']); ?></td>
-                                <td><?php echo floatval($m['group_work']); ?></td>
-                                <td><?php echo floatval($m['mid_exam']); ?></td>
-                                <td><?php echo floatval($m['final_exam']); ?></td>
-                                <td class="fw-bold text-primary bg-light"><?php echo number_format($m['total_score'], 1); ?></td>
-                            </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr><td colspan="10" class="py-5 text-muted">No records found.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+        <!-- TRIPLE SUMMARY CARDS (Rank, Sum, Average) -->
+        <div class="row g-2 mb-3">
+            <!-- RANK -->
+            <div class="col-4">
+                <div class="card bg-primary text-white border-0 shadow-sm">
+                    <div class="card-body p-2 p-md-3 text-center">
+                        <small class="stat-label opacity-75 d-block text-uppercase fw-bold">Rank</small>
+                        <h3 class="stat-value fw-bold mb-0"><?php echo $my_rank; ?></h3>
+                    </div>
+                </div>
+            </div>
+            <!-- SUM -->
+            <div class="col-4">
+                <div class="card bg-success text-white border-0 shadow-sm">
+                    <div class="card-body p-2 p-md-3 text-center">
+                        <small class="stat-label opacity-75 d-block text-uppercase fw-bold">Total Sum</small>
+                        <h3 class="stat-value fw-bold mb-0"><?php echo number_format($my_total_sum, 1); ?></h3>
+                    </div>
+                </div>
+            </div>
+            <!-- AVERAGE -->
+            <div class="col-4">
+                <div class="card bg-info text-white border-0 shadow-sm">
+                    <div class="card-body p-2 p-md-3 text-center">
+                        <small class="stat-label opacity-75 d-block text-uppercase fw-bold">Average</small>
+                        <h3 class="stat-value fw-bold mb-0"><?php echo number_format($my_average, 1); ?>%</h3>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- MARKS TABLE -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover m-0 text-center align-middle score-table">
+                        <thead class="table-dark small text-uppercase">
+                            <tr>
+                                <th class="text-start ps-3">Subject</th>
+                                <th>T1</th><th>T2</th><th>Ac</th><th>Ex</th><th>In</th><th>Gr</th><th>Mid</th><th>Fin</th>
+                                <th class="bg-primary">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if($marks_res->num_rows > 0): ?>
+                                <?php while($m = $marks_res->fetch_assoc()): ?>
+                                <tr>
+                                    <td class="text-start ps-3 fw-bold"><?php echo $m['subject_name']; ?></td>
+                                    <td><?php echo ($m['test1'] !== null) ? floatval($m['test1']) : '-'; ?></td>
+                                    <td><?php echo ($m['test2'] !== null) ? floatval($m['test2']) : '-'; ?></td>
+                                    <td><?php echo ($m['activity'] !== null) ? floatval($m['activity']) : '-'; ?></td>
+                                    <td><?php echo ($m['exercise'] !== null) ? floatval($m['exercise']) : '-'; ?></td>
+                                    <td><?php echo ($m['indiv_work'] !== null) ? floatval($m['indiv_work']) : '-'; ?></td>
+                                    <td><?php echo ($m['group_work'] !== null) ? floatval($m['group_work']) : '-'; ?></td>
+                                    <td><?php echo ($m['mid_exam'] !== null) ? floatval($m['mid_exam']) : '-'; ?></td>
+                                    <td><?php echo ($m['final_exam'] !== null) ? floatval($m['final_exam']) : '-'; ?></td>
+                                    <td class="fw-bold text-primary bg-light"><?php echo number_format($m['total_score'], 1); ?></td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr><td colspan="10" class="py-5 text-muted">No academic records found for this period.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <h3 class="<?php echo ($my_average >= 50) ? 'text-success' : 'text-danger'; ?> fw-bold text-uppercase" style="letter-spacing: 2px;">
+                <?php echo ($my_average >= 50) ? 'Status: Promoted' : 'Status: Failed'; ?>
+            </h3>
+        </div>
+
     </div>
 </div>
-
-<style>
-    /* Styling for mobile - keeps table headers readable */
-    @media (max-width: 576px) {
-        .table th, .table td { padding: 0.4rem 0.2rem !important; font-size: 0.75rem; }
-        .display-4 { font-size: 2rem; }
-    }
-</style>
 
 <?php include 'footer.php'; ?>

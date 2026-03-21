@@ -40,6 +40,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
             <a href="evaluate_teacher.php" class="list-group-item list-group-item-action bg-transparent text-white">
                 <i class="fas fa-user-check me-2"></i> Evaluate Teachers
             </a>
+            <a href="change_password.php" class="list-group-item list-group-item-action bg-transparent text-white">
+                <i class="fas fa-key me-2"></i> Change Password </a>
             
         </div>
     </div>

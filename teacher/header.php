@@ -23,7 +23,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
         <div class="list-group list-group-flush my-3">
             <a href="dashboard.php" class="list-group-item"><i class="fas fa-home me-2"></i> My Classes</a>
             <a href="view_schedule.php" class="list-group-item"><i class="fas fa-calendar-alt me-2"></i> My Schedule</a>
-            <a href="my_performance.php" class="list-group-item"><i class="fas fa-star me-2"></i> My Performance</a>
+            <a href="my_performance.php" class="list-group-item"><i class="fas fa-star me-2"></i> My Performance</a> 
+            <a href="change_password.php" class="list-group-item"><i class="fas fa-key me-3"></i> Change Password</a>   
         </div>
         <!-- Inside sidebar .list-group -->
 <?php
@@ -36,6 +37,7 @@ if ($check_homeroom->num_rows > 0):
     <a href="class_reports.php" class="list-group-item list-group-item-action bg-transparent text-white">
         <i class="fas fa-chart-line me-2"></i> Class Reports (Rank)
     </a>
+    
 <?php endif; ?>
     </div>
 
@@ -47,6 +49,7 @@ if ($check_homeroom->num_rows > 0):
             <div class="ms-auto">
                 <span class="me-3 fw-bold text-muted"><?php echo $_SESSION['full_name']; ?></span>
                 <a href="../logout.php" class="btn btn-danger btn-sm">Logout</a>
+                
             </div>
         </nav>
         <div class="container-fluid">
