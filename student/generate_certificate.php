@@ -113,7 +113,7 @@ while($row = $rank_res->fetch_assoc()) {
         <div class="rank-box shadow-sm">
             <div class="row">
                 <div class="col-6 border-end">
-                    <small class="text-muted d-block">Final Rank</small>
+                    <small class="text-muted d-block">FinaL Rank</small>
                     <span class="fs-3 fw-bold text-primary"><?php echo $my_rank; ?></span>
                 </div>
                 <div class="col-6">
