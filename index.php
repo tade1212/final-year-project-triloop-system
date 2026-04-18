@@ -10,6 +10,14 @@
     
     <!-- 2. Our Custom CSS (Local) -->
     <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+        body{
+            background-image:url('assets/images/bground.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 15px;
+        }
+    </style>
 </head>
 <body>
 
@@ -33,7 +41,7 @@
         
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password">
+            <input type="password" class="form-control" id="password" name="password" required >
         </div>
 
         <button type="submit" class="btn btn-primary w-100 py-2 btn-login">Login</button>

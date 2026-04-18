@@ -103,18 +103,23 @@ include 'header.php';
                 <table class="table table-bordered table-striped table-hover mb-0 text-center align-middle small">
                     <thead class="bg-dark text-white">
                         <tr>
-                            <th>Rank</th><th>ID</th><th class="text-start">Name</th>
+                            <th>ID</th>
+                            <th class="text-start">Name</th>
                             <?php foreach($subjects as $subName): ?>
                                 <th><?php echo substr($subName, 0, 3); ?></th>
                             <?php endforeach; ?>
                             <th class="bg-primary text-white">Avg</th>
+                            <th>Rank</th>
                             <th>Status</th>
+                            <!-- ADDED COLUMN FOR TEACHER TO PRINT -->
+                            <?php if($view_type == 'annual'): ?>
+                                <th class="no-print bg-warning text-dark">Certificate</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php $rank = 1; foreach ($data as $student): $avg = round($student['avg'], 1); ?>
+                        <?php $rank = 1; foreach ($data as $sid => $student): $avg = round($student['avg'], 1); ?>
                         <tr>
-                            <td class="fw-bold"><?php echo $rank++; ?></td>
                             <td class="text-muted"><?php echo $student['username']; ?></td>
                             <td class="text-start fw-bold"><?php echo $student['name']; ?></td>
                             <?php foreach($subjects as $subId => $subName): 
@@ -122,7 +127,17 @@ include 'header.php';
                                 <td class="<?php echo ($score < 50 && is_numeric($score)) ? 'text-danger' : ''; ?>"><?php echo $score; ?></td>
                             <?php endforeach; ?>
                             <td class="bg-primary bg-opacity-10 fw-bold"><?php echo $avg; ?></td>
+                            <td class="fw-bold"><?php echo $rank++; ?></td>
                             <td><?php echo ($avg >= 50) ? '<span class="badge bg-success">Pass</span>' : '<span class="badge bg-danger">Fail</span>'; ?></td>
+                            <!-- ADDED PRINT BUTTON FOR TEACHER -->
+                            <?php if($view_type == 'annual'): ?>
+                                <td class="no-print">
+                                    <a href="../student/generate_certificate.php?sid=<?php echo $sid; ?>&year=<?php echo $selected_year; ?>&class_id=<?php echo $class_id; ?>" 
+                                       class="btn btn-sm btn-outline-dark" target="_blank">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </td>
+                            <?php endif; ?>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
