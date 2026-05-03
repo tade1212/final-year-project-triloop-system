@@ -50,9 +50,9 @@ $classes = $conn->query("SELECT * FROM classes ORDER BY grade_level");
 include 'header.php';
 ?>
 
-<div class="container mt-4">
+<div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-6"> <!-- Optimized width for a centered form -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="m-0 fw-bold text-primary"><i class="fas fa-user-cog me-2"></i> Edit User Profile</h5>
@@ -60,10 +60,10 @@ include 'header.php';
                 </div>
                 <div class="card-body p-4">
                     
-                    <?php if($success) echo "<div class='alert alert-success'>$success</div>"; ?>
-                    <?php if($error) echo "<div class='alert alert-danger'>$error</div>"; ?>
+                    <?php if($success) echo "<div class='alert alert-success shadow-sm py-2'>$success</div>"; ?>
+                    <?php if($error) echo "<div class='alert alert-danger shadow-sm py-2'>$error</div>"; ?>
 
-                    <!-- PIN DISPLAY AREA (Shows only when reset button is clicked) -->
+                    <!-- PIN DISPLAY AREA -->
                     <?php if($new_pin_display): ?>
                         <div class="alert alert-warning border-warning text-center shadow-sm mb-4">
                             <h6 class="fw-bold text-dark mb-2"><i class="fas fa-key me-2"></i> New Temporary PIN Generated</h6>
@@ -72,58 +72,58 @@ include 'header.php';
                         </div>
                     <?php endif; ?>
 
-                    <div class="row">
-                        <!-- LEFT SIDE: Profile Info -->
-                        <div class="col-md-7 border-end">
-                            <form method="POST">
-                                <h6 class="fw-bold mb-3 text-secondary">General Information</h6>
-                                <div class="mb-3">
-                                    <label class="form-label small">Full Name</label>
-                                    <input type="text" name="full_name" class="form-control" value="<?php echo $user['full_name']; ?>" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small">Username (ID)</label>
-                                    <input type="text" name="username" class="form-control" value="<?php echo $user['username']; ?>" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label small">System Role</label>
-                                    <select name="role" class="form-select" id="roleSelect" onchange="toggleEditClass()">
-                                        <option value="admin" <?php if($user['role']=='admin') echo 'selected'; ?>>Admin</option>
-                                        <option value="teacher" <?php if($user['role']=='teacher') echo 'selected'; ?>>Teacher</option>
-                                        <option value="student" <?php if($user['role']=='student') echo 'selected'; ?>>Student</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3" id="editClassDiv" style="display: <?php echo ($user['role']=='student')?'block':'none'; ?>;">
-                                    <label class="form-label small text-success fw-bold">Assigned Class</label>
-                                    <select name="class_id" class="form-select">
-                                        <?php while($c = $classes->fetch_assoc()): ?>
-                                            <option value="<?php echo $c['class_id']; ?>" <?php if($user['class_id']==$c['class_id']) echo 'selected'; ?>>
-                                                Grade <?php echo $c['grade_level'].'-'.$c['section']; ?>
-                                            </option>
-                                        <?php endwhile; ?>
-                                    </select>
-                                </div>
-                                <button type="submit" name="update_user" class="btn btn-primary w-100 mt-2 shadow-sm">Save Changes</button>
-                            </form>
+                    <form method="POST">
+                        <h6 class="fw-bold mb-4 text-secondary text-center">Account Details for <?php echo $user['full_name']; ?></h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
                         </div>
 
-                        <!-- RIGHT SIDE: Security/PIN Reset -->
-                        <div class="col-md-5 ps-md-4 mt-4 mt-md-0">
-                            <h6 class="fw-bold mb-3 text-secondary">Security Access</h6>
-                            <div class="p-3 bg-light rounded border text-center">
-                                <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
-                                <p class="small text-muted mb-4">If the user has forgotten their password, you can generate a system PIN. <strong>You cannot set the password yourself.</strong></p>
-                                
-                                <form method="POST" onsubmit="return confirm('Generate a new random PIN for this user?');">
-                                    <button type="submit" name="generate_pin" class="btn btn-warning w-100 fw-bold shadow-sm">
-                                        <i class="fas fa-sync-alt me-2"></i> Generate New PIN
-                                    </button>
-                                </form>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Username (ID)</label>
+                            <input type="text" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username']); ?>" required>
                         </div>
-                    </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">System Role</label>
+                            <select name="role" class="form-select" id="roleSelect" onchange="toggleEditClass()">
+                                <option value="admin" <?php if($user['role']=='admin') echo 'selected'; ?>>Admin</option>
+                                <option value="teacher" <?php if($user['role']=='teacher') echo 'selected'; ?>>Teacher</option>
+                                <option value="student" <?php if($user['role']=='student') echo 'selected'; ?>>Student</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4" id="editClassDiv" style="display: <?php echo ($user['role']=='student')?'block':'none'; ?>;">
+                            <label class="form-label small text-success fw-bold">Assigned Class</label>
+                            <select name="class_id" class="form-select">
+                                <option value="">-- Select Class --</option>
+                                <?php while($c = $classes->fetch_assoc()): ?>
+                                    <option value="<?php echo $c['class_id']; ?>" <?php if($user['class_id']==$c['class_id']) echo 'selected'; ?>>
+                                        Grade <?php echo $c['grade_level'].'-'.$c['section']; ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="update_user" class="btn btn-primary shadow-sm">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                            
+                            <hr class="my-3">
+                            
+                            <!-- <button type="submit" name="generate_pin" class="btn btn-outline-warning fw-bold" onclick="return confirm('Generate a new random PIN for this user?');">
+                                <i class="fas fa-sync-alt me-2"></i> Generate New System PIN
+                            </button> -->
+                        </div>
+                    </form>
 
                 </div>
+            </div>
+            
+            <div class="text-center mt-4 text-muted small">
+                <i class="fas fa-info-circle me-1"></i> Passwords are encrypted using BCRYPT for maximum security.
             </div>
         </div>
     </div>
@@ -135,4 +135,5 @@ include 'header.php';
         document.getElementById("editClassDiv").style.display = (role === "student") ? "block" : "none";
     }
 </script>
+
 <?php include 'footer.php'; ?>

@@ -25,6 +25,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
             <a href="view_schedule.php" class="list-group-item"><i class="fas fa-calendar-alt me-2"></i> My Schedule</a>
             <a href="my_performance.php" class="list-group-item"><i class="fas fa-star me-2"></i> My Performance</a> 
             <a href="change_password.php" class="list-group-item"><i class="fas fa-key me-3"></i> Change Password</a>   
+        <a href="peer_evaluation.php" class="list-group-item"><i class="fas fa-users-cog me-2"></i> Peer Evaluation</a>
         </div>
         <!-- Inside sidebar .list-group -->
 <?php
