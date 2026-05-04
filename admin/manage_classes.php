@@ -9,7 +9,7 @@ $error = "";
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
     $conn->query("DELETE FROM classes WHERE class_id=$id");
-    header("Location: manage_classes.php?msg=deleted"); // Refresh to remove ID from URL
+    header("Location: manage_classes.php?msg=deleted");
     exit();
 }
 
@@ -25,10 +25,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $section = strtoupper(trim($_POST['section']));
     $teacher_id = $_POST['class_teacher_id'];
 
-    $check = $conn->query("SELECT * FROM classes WHERE grade_level='$grade' AND section='$section'");
+    // REFINEMENT 1: Check if Class exists
+    $check_class = $conn->query("SELECT * FROM classes WHERE grade_level='$grade' AND section='$section'");
     
-    if ($check->num_rows > 0) {
+    // REFINEMENT 2: Check if Teacher is already a Homeroom Teacher (New Logic)
+    $check_teacher = $conn->query("SELECT * FROM classes WHERE class_teacher_id='$teacher_id'");
+
+    if ($check_class->num_rows > 0) {
         $error = "Error: Class $grade-$section already exists!";
+    } elseif ($check_teacher->num_rows > 0) {
+        $error = "Error: This teacher is already assigned as a Homeroom Teacher to another section!";
     } else {
         $sql = "INSERT INTO classes (grade_level, section, class_teacher_id) VALUES (?, ?, ?)";
         $stmt = $conn->prepare($sql);
@@ -51,7 +57,6 @@ include 'header.php';
 
 <div class="container-fluid">
     <div class="row">
-        
         <!-- Add Class Form -->
         <div class="col-md-4">
             <div class="card shadow-sm mt-4">
@@ -59,12 +64,12 @@ include 'header.php';
                     <h5 class="m-0 text-primary fw-bold">Create Class</h5>
                 </div>
                 <div class="card-body">
-                    <?php if($error) echo "<div class='alert alert-danger'>$error</div>"; ?>
-                    <?php if($success) echo "<div class='alert alert-success'>$success</div>"; ?>
+                    <?php if($error) echo "<div class='alert alert-danger py-2 small'>$error</div>"; ?>
+                    <?php if($success) echo "<div class='alert alert-success py-2 small'>$success</div>"; ?>
 
                     <form method="POST">
                         <div class="mb-3">
-                            <label>Grade Level</label>
+                            <label class="small fw-bold">Grade Level</label>
                             <select name="grade" class="form-select" required>
                                 <option value="9">Grade 9</option>
                                 <option value="10">Grade 10</option>
@@ -73,11 +78,11 @@ include 'header.php';
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label>Section</label>
+                            <label class="small fw-bold">Section</label>
                             <input type="text" name="section" class="form-control" placeholder="A, B, C..." maxlength="1" required>
                         </div>
                         <div class="mb-3">
-                            <label>Homeroom Teacher</label>
+                            <label class="small fw-bold">Homeroom Teacher</label>
                             <select name="class_teacher_id" class="form-select" required>
                                 <option value="" selected disabled>Select Teacher...</option>
                                 <?php while($t = $teachers->fetch_assoc()): ?>
@@ -85,25 +90,25 @@ include 'header.php';
                                 <?php endwhile; ?>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Add Class</button>
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm">Add Class</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Class List Table -->
+        <!-- Class List Table (Preserved Design) -->
         <div class="col-md-8">
             <div class="card shadow-sm mt-4">
                 <div class="card-header bg-white py-3">
                     <h5 class="m-0 text-primary fw-bold">Existing Classes</h5>
                 </div>
-                <div class="card-body">
-                    <table class="table table-bordered table-striped">
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-striped mb-0">
                         <thead class="table-dark">
                             <tr>
                                 <th>Class</th>
                                 <th>Homeroom Teacher</th>
-                                <th style="width: 150px;">Action</th>
+                                <th style="width: 120px;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -119,18 +124,9 @@ include 'header.php';
                                     }
                                     ?>
                                 </td>
-                                <td>
-                                    <!-- Edit Button -->
-                                    <a href="edit_class.php?id=<?php echo $row['class_id']; ?>" class="btn btn-sm btn-warning text-white">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    
-                                    <!-- Delete Button (With Confirmation Alert) -->
-                                    <a href="manage_classes.php?delete=<?php echo $row['class_id']; ?>" 
-                                       class="btn btn-sm btn-danger" 
-                                       onclick="return confirm('Are you sure you want to delete this class? All student data inside will be hidden!');">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                <td class="text-center">
+                                    <a href="edit_class.php?id=<?php echo $row['class_id']; ?>" class="btn btn-sm btn-warning text-white"><i class="fas fa-edit"></i></a>
+                                    <a href="manage_classes.php?delete=<?php echo $row['class_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this class?');"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
                             <?php endwhile; ?>
@@ -139,8 +135,6 @@ include 'header.php';
                 </div>
             </div>
         </div>
-
     </div>
 </div>
-
 <?php include 'footer.php'; ?>
