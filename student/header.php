@@ -17,7 +17,31 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    /* Sidebar Icon Refinement */
+#sidebar-wrapper .list-group-item i {
+    width: 25px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 1.1rem;
+    filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1)); /* Improves sharpness */
+}
 
+/* Specific Colors to remove blur and add vibrancy */
+.fa-tachometer-alt { color: #3498db; } /* Blue */
+.fa-users { color: #e67e22; }          /* Orange */
+.fa-chalkboard { color: #1abc9c; }     /* Teal */
+.fa-book { color: #9b59b6; }           /* Purple */
+.fa-calendar-alt { color: #e74c3c; }   /* Red */
+.fa-star { color: #f1c40f; }           /* Yellow */
+.fa-cog { color: #95a5a6; }            /* Grey */
+.fa-user-graduate { color: #2ecc71; }  /* Green */
+.fa-school { color: #3498db; } /* Dark Blue for Logo */
+.fa-chart-line { color: #2ecc71; } /* Green for Marks & Rank */
+.fa-user-check { color: #1abc9c; } /* Teal for Evaluate Teachers */
+.fa-key { color: #e67e22; } /* Orange for Change Password */
+.sidebar-heading { color: #3498db; font-weight: 800; font-size: 1.25rem; }
+</style>
 </head>
 <body>
 

@@ -4,6 +4,7 @@ require '../includes/db_connect.php';
 
 $success = ""; $error = ""; $temp_pin = "";
 
+
 // --- 1. HANDLE SYSTEM PIN RESET (Keep Existing Handshake Logic) ---
 if (isset($_POST['finalize_reset'])) {
     $target_id = intval($_POST['target_id']);
@@ -32,6 +33,7 @@ if (isset($_POST['finalize_reset'])) {
 // --- 2. KEEP PREVIOUS ADD USER LOGIC ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user'])) {
     $full_name = trim($_POST['full_name']);
+    $sex = trim($_POST['sex']);
     $username  = trim($_POST['username']);
     $password  = $_POST['password'];
     $role      = $_POST['role'];
@@ -39,8 +41,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user'])) {
     $hashed = password_hash($password, PASSWORD_DEFAULT);
     $check = $conn->query("SELECT user_id FROM users WHERE username = '$username'");
     if ($check->num_rows > 0) { $error = "Username already exists!"; } else {
-        $stmt = $conn->prepare("INSERT INTO users (full_name, username, password, role) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $full_name, $username, $hashed, $role);
+        $stmt = $conn->prepare("INSERT INTO users (full_name, sex, username, password, role) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $full_name, $sex, $username, $hashed, $role);
         if ($stmt->execute()) {
             if ($role == 'student' && !empty($class_id)) {
                 $conn->query("INSERT INTO students (student_id, class_id) VALUES ({$stmt->insert_id}, $class_id)");
@@ -231,6 +233,17 @@ include 'header.php';
             <div class="mb-3"><label class="small fw-bold text-muted">Full Name</label><input type="text" name="full_name" class="form-control" required></div>
             <div class="mb-3"><label class="small fw-bold text-muted">Username (ID)</label><input type="text" name="username" class="form-control" required></div>
             <div class="mb-3"><label class="small fw-bold text-muted">Temporary Password</label><input type="text" name="password" class="form-control" value="123456" required></div>
+            <div class="mb-3">
+    <label class="small fw-bold text-muted"> Gender</label><br>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="sex" id="sexMale" value="Male" required>
+        <label class="form-check-label" for="sexMale">Male</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="sex" id="sexFemale" value="Female" required>
+        <label class="form-check-label" for="sexFemale">Female</label>
+    </div>
+</div>
             <div class="mb-3"><label class="small fw-bold text-muted">Account Role</label><select name="role" id="modalRoleSelect" class="form-select" onchange="toggleModalClassField()"><option value="teacher">Teacher</option><option value="admin">Admin</option><option value="student">Student</option></select></div>
             <div class="mb-3" id="classSelectionDiv" style="display:none;"><label class="small fw-bold text-success">Initial Class Placement</label><select name="class_id" class="form-select"><option value="">Select Class...</option><?php 
                 $c_q = $conn->query("SELECT * FROM classes ORDER BY grade_level");

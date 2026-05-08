@@ -13,9 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_user'])) {
     $role      = $_POST['role'];
     $class_id  = $_POST['class_id'] ?? null;
 
-    $stmt = $conn->prepare("UPDATE users SET full_name=?, username=?, role=? WHERE user_id=?");
-    $stmt->bind_param("sssi", $full_name, $username, $role, $user_id);
-    
+    $stmt = $conn->prepare("UPDATE users SET full_name=?, sex=?, username=?, role=? WHERE user_id=?");
+$stmt->bind_param("ssssi", $full_name, $sex, $username, $role, $user_id);
     if ($stmt->execute()) {
         $success = "User details updated successfully.";
         // Handle Student Class Assignment
@@ -84,6 +83,13 @@ include 'header.php';
                             <label class="form-label small fw-bold">Username (ID)</label>
                             <input type="text" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username']); ?>" required>
                         </div>
+                        <div class="mb-3">
+    <label class="form-label small fw-bold">Sex / Gender</label>
+    <select name="sex" class="form-select">
+        <option value="Male" <?php if($user['sex']=='Male') echo 'selected'; ?>>Male</option>
+        <option value="Female" <?php if($user['sex']=='Female') echo 'selected'; ?>>Female</option>
+    </select>
+</div>
 
                         <div class="mb-3">
                             <label class="form-label small fw-bold">System Role</label>

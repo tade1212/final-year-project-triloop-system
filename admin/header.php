@@ -15,6 +15,27 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     <link href="../assets/css/style.css" rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Sidebar Icon Refinement */
+#sidebar-wrapper .list-group-item i {
+    width: 25px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 1.1rem;
+    filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1)); /* Improves sharpness */
+}
+
+/* Specific Colors to remove blur and add vibrancy */
+.fa-tachometer-alt { color: #3498db; } /* Blue */
+.fa-users { color: #e67e22; }          /* Orange */
+.fa-chalkboard { color: #1abc9c; }     /* Teal */
+.fa-book { color: #9b59b6; }           /* Purple */
+.fa-calendar-alt { color: #e74c3c; }   /* Red */
+.fa-star { color: #f1c40f; }           /* Yellow */
+.fa-cog { color: #95a5a6; }            /* Grey */
+.fa-user-graduate { color: #2ecc71; }  /* Green */
+.fa-school { color: #3498db; } /* Dark Blue for Logo */
+</style>
 </head>
 <body>
 
