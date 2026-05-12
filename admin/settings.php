@@ -97,9 +97,9 @@ while($row = $res->fetch_assoc()) {
                             <span class="input-group-text">%</span>
                         </div>
                     </div>
-                    <div class="col-12 mt-2">
+                    <!-- <div class="col-12 mt-2">
                         <small class="text-danger">* Ensure the sum of all weights equals 100.</small>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="mt-4 text-end">

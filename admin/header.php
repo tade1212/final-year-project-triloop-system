@@ -35,6 +35,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 .fa-cog { color: #95a5a6; }            /* Grey */
 .fa-user-graduate { color: #2ecc71; }  /* Green */
 .fa-school { color: #3498db; } /* Dark Blue for Logo */
+.fa-chart-line { color: #2ecc71; } /* Green for Marks & Rank */
+.fa-user-check { color: #1abc9c; } /* Teal for Evaluate Teachers
+.fa-key { color: #e67e22; } /* Orange for Change Password */
+
 </style>
 </head>
 <body>

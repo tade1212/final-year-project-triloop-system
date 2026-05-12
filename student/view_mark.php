@@ -213,7 +213,7 @@ $marks_res = $conn->query($marks_sql);
                         <thead class="table-dark small text-uppercase">
                             <tr>
                                 <th class="text-start ps-3">Subject</th>
-                                <th>T1</th><th>T2</th><th>Ac</th><th>Ex</th><th>In</th><th>Gr</th><th>Mid</th><th>Fin</th>
+                                <th>T1(5%)</th><th>T2(5%)</th><th>Ac(5%)</th><th>Ex(5%)</th><th>In(5%)</th><th>Gr(5%)</th><th>Mid(20%)</th><th>Fin(50%)</th>
                                 <th class="bg-primary">Total</th>
                             </tr>
                         </thead>
